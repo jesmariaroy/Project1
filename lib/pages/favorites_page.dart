@@ -19,6 +19,12 @@ class FavoritesPage extends StatelessWidget {
           style: GoogleFonts.pacifico(), // Stylish font for the title
         ),
         backgroundColor: Colors.teal, // AppBar color
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white), // Back button
+          onPressed: () {
+            Navigator.pop(context); // Go back to the User Dashboard
+          },
+        ),
       ),
       body: dishes.isEmpty
           ? Center(
