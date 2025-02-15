@@ -13,7 +13,8 @@ class FavoriteDishesPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Favorite Dishes',
-          style: GoogleFonts.pacifico(), // Stylish font for the title
+          style: GoogleFonts.pacifico(
+              color: Colors.white), // Set title text color to white
         ),
         backgroundColor: Colors.teal, // AppBar color
       ),
