@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Forgot Password',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
       ),
       home: ForgotPasswordPage(),
     );
@@ -30,9 +30,6 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordState extends State<ForgotPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  bool _isOtpSent = false;
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> _sendOtp() async {
@@ -40,9 +37,6 @@ class _ForgotPasswordState extends State<ForgotPasswordPage> {
     if (email.isNotEmpty) {
       try {
         await _auth.sendPasswordResetEmail(email: email);
-        setState(() {
-          _isOtpSent = true;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Password reset link sent to your email!')),
@@ -51,7 +45,6 @@ class _ForgotPasswordState extends State<ForgotPasswordPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
-        print('Error sending reset email: $e'); // Log error for debugging
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,155 +53,84 @@ class _ForgotPasswordState extends State<ForgotPasswordPage> {
     }
   }
 
-  Future<void> _resetPassword() async {
-    final newPassword = _newPasswordController.text.trim();
-
-    if (newPassword.isNotEmpty && newPassword.length >= 5) {
-      try {
-        User? user = _auth.currentUser;
-        if (user != null) {
-          await user.updatePassword(newPassword);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password reset successfully!')),
-          );
-          Navigator.pop(context);
-        } else {
-          await _auth.sendPasswordResetEmail(
-              email: _emailController.text.trim());
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Password reset link sent to your email!')),
-          );
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Password must be at least 5 characters.')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/b.jpg',
+              'assets/images/food_background.jpg',
               fit: BoxFit.cover,
               alignment: Alignment.center,
-              errorBuilder: (context, error, stackTrace) {
-                return Center(
-                  child: Text(
-                    'Failed to load image: $error',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                );
-              },
             ),
           ),
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.6),
-                  ],
-                ),
-              ),
+              color: Colors.black.withOpacity(0.6),
             ),
           ),
           Center(
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 1,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              width: MediaQuery.of(context).size.width * 0.85,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Forgot Password',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.black,
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.white),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      prefixIcon: const Icon(Icons.email, color: Colors.orange),
                     ),
-                  ],
-                ),
-                width: MediaQuery.of(context).size.width * 0.85,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'RESET YOUR PASSWORD',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      textAlign: TextAlign.center,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 40),
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        prefixIcon: const Icon(Icons.email),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      enabled: !_isOtpSent,
+                    onPressed: _sendOtp,
+                    child: const Text(
+                      'Send Reset Link',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
-                    const SizedBox(height: 20),
-                    if (_isOtpSent)
-                      Column(
-                        children: [
-                          TextField(
-                            controller: _newPasswordController,
-                            decoration: InputDecoration(
-                              labelText: 'New Password',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              prefixIcon: const Icon(Icons.lock),
-                            ),
-                            obscureText: true,
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: _resetPassword,
-                            child: const Text('Reset Password'),
-                          ),
-                        ],
-                      ),
-                    if (!_isOtpSent)
-                      ElevatedButton(
-                        onPressed: _sendOtp,
-                        child: const Text('Send Password Reset Link'),
-                      ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Back to Login',
+                      style: TextStyle(color: Colors.orange, fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -220,7 +142,6 @@ class _ForgotPasswordState extends State<ForgotPasswordPage> {
   @override
   void dispose() {
     _emailController.dispose();
-    _newPasswordController.dispose();
     super.dispose();
   }
 }
