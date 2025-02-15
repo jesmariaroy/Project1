@@ -137,6 +137,12 @@ class _UserTableBookingPageState extends State<UserTableBookingPage> {
               color: Colors.white), // Set text color to white
         ),
         backgroundColor: Colors.teal, // AppBar color
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white), // Back button
+          onPressed: () {
+            Navigator.pop(context); // Go back to the previous page
+          },
+        ),
         actions: [
           IconButton(
             icon:
