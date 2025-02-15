@@ -142,8 +142,10 @@ class _RestaurantImageUploadPageState extends State<RestaurantImageUploadPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Upload Restaurant Images',
-          style: GoogleFonts.pacifico(),
+          'Upload Restaurant Image',
+          style: GoogleFonts.pacifico(
+            color: Colors.white, // Stylish font with white color
+          ),
         ),
         backgroundColor: Colors.teal,
       ),
