@@ -8,9 +8,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:proj1/pages/restaurant_image_upload_page.dart';
 import 'package:proj1/pages/TableBookingPage.dart';
-import 'package:proj1/pages/NotificationPage.dart';
+import 'package:proj1/pages/restaurant_image_upload_page.dart';
 
 class HotelAdminDashboard extends StatefulWidget {
   @override
@@ -23,8 +22,8 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
 
   String? _restaurantName;
   String? _restaurantDescription;
+  String? _restaurantAddress; // New variable for address
   dynamic _restaurantImageFile;
-  String? _restaurantAddress;
 
   String? _menuName;
   String? _menuPrice;
@@ -69,30 +68,6 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
   ];
 
   final Map<String, List<String>> _districts = {
-    'Andhra Pradesh': [
-      'Anakapalli',
-      'Anantapur',
-      'Bapatla',
-      'Chittoor',
-      'East Godavari',
-      'Eluru',
-      'Guntur',
-      'Kakinada',
-      'Konaseema',
-      'Krishna',
-      'Kurnool',
-      'Nandyal',
-      'Nellore',
-      'Parvathipuram Manyam',
-      'Prakasam',
-      'Srikakulam',
-      'Sri Sathya Sai',
-      'Tirupati',
-      'Visakhapatnam',
-      'Vizianagaram',
-      'West Godavari',
-      'YSR Kadapa'
-    ],
     'Arunachal Pradesh': [
       'Anjaw',
       'Changlang',
@@ -805,6 +780,7 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
       'Uttar Dinajpur'
     ]
   };
+
   Future<void> _pickAndUploadImage({required bool isMenu}) async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile =
@@ -878,7 +854,7 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
         await _firestore.collection('restaurants').add({
           'name': _restaurantName,
           'description': _restaurantDescription,
-          'address': _restaurantAddress, // Store address
+          'address': _restaurantAddress, // Store address in Firestore
           'image': imageUrl,
           'createdBy': _auth.currentUser!.uid,
           'state': _selectedState,
@@ -893,31 +869,94 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
         setState(() => _isUploading = false);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('All fields, image, and address are required.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('All fields and image are required.')));
     }
   }
 
   Future<void> _updateRestaurant(String restaurantId) async {
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
+    TextEditingController addressController =
+        TextEditingController(); // New controller for address
+    String? selectedState; // New variable for selected state
+    String? selectedDistrict; // New variable for selected district
+
+    // Fetch current restaurant data to pre-fill the fields
+    DocumentSnapshot restaurantDoc =
+        await _firestore.collection('restaurants').doc(restaurantId).get();
+    nameController.text = restaurantDoc['name'];
+    descriptionController.text = restaurantDoc['description'];
+    addressController.text = restaurantDoc['address']; // Pre-fill address
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Update Restaurant'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: 'New Name'),
+        content: Container(
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal[100]!, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            TextField(
-              controller: descriptionController,
-              decoration: InputDecoration(labelText: 'New Description'),
-            ),
-          ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'New Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'New Description'),
+              ),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                    labelText: 'New Address'), // New address field
+                maxLines: 3, // Allow multiple lines for address
+              ),
+              // Dropdown for state
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: 'Select State'),
+                value: selectedState,
+                onChanged: (value) {
+                  setState(() {
+                    selectedState = value;
+                    selectedDistrict =
+                        null; // Reset district when state changes
+                  });
+                },
+                items: _states.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
+              ),
+              // Dropdown for district
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: 'Select District'),
+                value: selectedDistrict,
+                onChanged: (value) {
+                  setState(() {
+                    selectedDistrict = value;
+                  });
+                },
+                items: selectedState == null
+                    ? []
+                    : _districts[selectedState!]!.map((String item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList(),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -926,13 +965,17 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
           TextButton(
             onPressed: () async {
               if (nameController.text.isNotEmpty &&
-                  descriptionController.text.isNotEmpty) {
+                  descriptionController.text.isNotEmpty &&
+                  addressController.text.isNotEmpty) {
                 await _firestore
                     .collection('restaurants')
                     .doc(restaurantId)
                     .update({
                   'name': nameController.text,
                   'description': descriptionController.text,
+                  'address': addressController.text, // Update address
+                  'state': selectedState, // Update state
+                  'district': selectedDistrict, // Update district
                 });
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -954,26 +997,50 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
     TextEditingController priceController = TextEditingController();
     TextEditingController categoryController = TextEditingController();
 
+    // Fetch current menu item data to pre-fill the fields
+    DocumentSnapshot menuDoc = await _firestore
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('menu')
+        .doc(menuId)
+        .get();
+
+    nameController.text = menuDoc['name'];
+    priceController.text =
+        menuDoc['price'].toString(); // Assuming price is a number
+    categoryController.text = menuDoc['category'];
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Update Menu Item'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: 'New Name'),
+        content: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal[100]!, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            TextField(
-              controller: priceController,
-              decoration: InputDecoration(labelText: 'New Price'),
-            ),
-            TextField(
-              controller: categoryController,
-              decoration: InputDecoration(labelText: 'New Category'),
-            ),
-          ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'New Name'),
+              ),
+              TextField(
+                controller: priceController,
+                decoration: InputDecoration(labelText: 'New Price'),
+                keyboardType:
+                    TextInputType.number, // Optional: for numeric input
+              ),
+              TextField(
+                controller: categoryController,
+                decoration: InputDecoration(labelText: 'New Category'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -991,7 +1058,8 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
                     .doc(menuId)
                     .update({
                   'name': nameController.text,
-                  'price': priceController.text,
+                  'price': double.tryParse(priceController.text) ??
+                      0.0, // Convert to double
                   'category': categoryController.text,
                 });
                 Navigator.of(context).pop();
@@ -1068,7 +1136,8 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
       appBar: AppBar(
         title: Text(
           'Hotel Admin Dashboard',
-          style: GoogleFonts.pacifico(),
+          style: GoogleFonts.pacifico(
+              color: Colors.white), // Set title color to white
         ),
         backgroundColor: Colors.teal,
         actions: [
@@ -1079,55 +1148,57 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.teal,
-              ),
-              child: Text(
-                'Admin Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal[100]!, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text(
+                  'Hotel Admin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.teal,
                 ),
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.image),
-              title: Text('Upload Restaurant Images'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RestaurantImageUploadPage(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.restaurant),
-              title: Text('Manage Restaurants'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.table_chart),
-              title: Text('Table Booking'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TableBookingPage(
-                      restaurantId: '',
+              ListTile(
+                leading: Icon(Icons.image),
+                title: Text('Upload Restaurant Image'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RestaurantImageUploadPage(),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.table_chart),
+                title: Text('Table Booking'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TableBookingPage(
+                        restaurantId: 'restaurantId',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Container(
@@ -1139,74 +1210,71 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
           ),
         ),
         padding: EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          // Added scrolling feature
-          child: StreamBuilder<QuerySnapshot>(
-            stream: _firestore
-                .collection('restaurants')
-                .where('createdBy', isEqualTo: _auth.currentUser!.uid)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator());
-              }
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _firestore
+              .collection('restaurants')
+              .where('createdBy', isEqualTo: _auth.currentUser!.uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-              final restaurants = snapshot.data!.docs;
+            final restaurants = snapshot.data!.docs;
 
-              if (restaurants.isNotEmpty) {
-                final restaurant = restaurants.first;
-                final restaurantId = restaurant.id;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      title: Text(
-                        restaurant['name'],
-                        style: GoogleFonts.lato(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        restaurant['description'],
-                        style: GoogleFonts.lato(),
-                      ),
-                    ),
-                    _buildTextField(
-                        'Address (Format:Restaurant Name\nShop/Building Name, Street Name, Landmark (if any)\n Road, Locality/Area\nCity - Pincode\nState\n📞 +Contact Number\n✉ Email)',
-                        (value) => _restaurantAddress = value,
-                        maxLines: 6),
-                    SizedBox(height: 10),
-                    _buildStylishButton('Update Restaurant',
-                        () => _updateRestaurant(restaurant.id)),
-                    SizedBox(height: 10), // Added spacing
-                    _buildStylishButton('Delete Restaurant',
-                        () => _deleteRestaurant(restaurant.id)),
-                    SizedBox(height: 20),
-                    _buildStylishButton('Go to Table Booking', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TableBookingPage(
-                                  restaurantId: restaurantId,
-                                )),
-                      );
-                    }),
-                    SizedBox(height: 20), // Added spacing
-                    Text(
-                      'Menu Management',
+            if (restaurants.isNotEmpty) {
+              final restaurant = restaurants.first;
+              final restaurantId = restaurant.id;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Text(
+                      restaurant['name'],
                       style: GoogleFonts.lato(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 10), // Added spacing
-                    _buildTextField('Menu Name', (value) => _menuName = value),
-                    _buildTextField('Price', (value) => _menuPrice = value),
-                    _buildTextField(
-                        'Category', (value) => _menuCategory = value),
-                    _buildImageButton('Pick Menu Image', true),
-                    SizedBox(height: 10), // Added spacing
-                    _buildStylishButton(
-                        'Add Menu Item', () => _addMenu(restaurant.id)),
-                    SizedBox(height: 20), // Added spacing
-                    StreamBuilder<QuerySnapshot>(
+                    subtitle: Text(
+                      restaurant['description'],
+                      style: GoogleFonts.lato(),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  _buildStylishButton('Update Restaurant',
+                      () => _updateRestaurant(restaurant.id)),
+                  SizedBox(height: 10), // Added spacing
+                  _buildStylishButton('Delete Restaurant',
+                      () => _deleteRestaurant(restaurant.id)),
+                  SizedBox(height: 10), // Added spacing
+                  _buildStylishButton('Go to Table Booking', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TableBookingPage(
+                                restaurantId: restaurantId,
+                              )),
+                    );
+                  }),
+                  SizedBox(height: 20), // Added spacing
+                  Text(
+                    'Menu Management',
+                    style: GoogleFonts.lato(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10), // Added spacing
+                  _buildTextField('Menu Name', (value) => _menuName = value),
+                  SizedBox(height: 10), // Added spacing
+                  _buildTextField('Price', (value) => _menuPrice = value),
+                  SizedBox(height: 10), // Added spacing
+                  _buildTextField('Category', (value) => _menuCategory = value),
+                  SizedBox(height: 10), // Added spacing
+                  _buildImageButton('Pick Menu Image', true),
+                  SizedBox(height: 10), // Added spacing
+                  _buildStylishButton(
+                      'Add Menu Item', () => _addMenu(restaurant.id)),
+                  SizedBox(height: 10), // Added spacing
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
                       stream: _firestore
                           .collection('restaurants')
                           .doc(restaurant.id)
@@ -1221,9 +1289,6 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
 
                         return ListView.builder(
                           itemCount: menuItems.length,
-                          shrinkWrap: true, // Important to set this to true
-                          physics:
-                              NeverScrollableScrollPhysics(), // Disable scrolling for the ListView
                           itemBuilder: (context, index) {
                             final menuItem = menuItems[index];
                             return ListTile(
@@ -1245,42 +1310,45 @@ class _HotelAdminDashboardState extends State<HotelAdminDashboard> {
                         );
                       },
                     ),
-                  ],
-                );
-              }
-
-              return ListView(
-                children: [
-                  _buildTextField(
-                      'Restaurant Name', (value) => _restaurantName = value),
-                  _buildTextField(
-                      'Description', (value) => _restaurantDescription = value),
-                  _buildDropdown('Select State', _states, (value) {
-                    setState(() {
-                      _selectedState = value;
-                      _selectedDistrict = null; // Reset district
-                    });
-                  }),
-                  _buildDropdown(
-                      'Select District',
-                      _selectedState == null
-                          ? []
-                          : _districts[_selectedState!]!, (value) {
-                    setState(() {
-                      _selectedDistrict = value;
-                    });
-                  }),
-                  _buildTextField(
-                      'Address (Format: Tandoori Delights\nGround Floor, Royal Plaza\nMG Road, Near Metro Station\nBangalore - 560001\nKarnataka\n📞 +91 98765 43210\n✉ info@tandooridelights.in)',
-                      (value) => _restaurantAddress = value,
-                      maxLines: 6),
-                  _buildImageButton('Pick Restaurant Image', false),
-                  SizedBox(height: 10), // Added spacing
-                  _buildStylishButton('Add Restaurant', _addRestaurant),
+                  ),
                 ],
               );
-            },
-          ),
+            }
+
+            return ListView(
+              children: [
+                _buildTextField(
+                    'Restaurant Name', (value) => _restaurantName = value),
+                SizedBox(height: 10), // Added spacing
+                _buildTextField(
+                    'Description', (value) => _restaurantDescription = value),
+                SizedBox(height: 10), // Added spacing
+                _buildTextField(
+                    'Address (Format: Restaurant Name\nFloor, Building Name\nStreet Name, Landmark\nCity - Pincode\nState\n📞 +Phone Number\n✉ Email Address)',
+                    (value) => _restaurantAddress = value,
+                    maxLines: 6),
+                SizedBox(height: 10), // Added spacing
+                _buildDropdown('Select State', _states, (value) {
+                  setState(() {
+                    _selectedState = value;
+                    _selectedDistrict = null; // Reset district
+                  });
+                }),
+                SizedBox(height: 10), // Added spacing
+                _buildDropdown('Select District',
+                    _selectedState == null ? [] : _districts[_selectedState!]!,
+                    (value) {
+                  setState(() {
+                    _selectedDistrict = value;
+                  });
+                }),
+                SizedBox(height: 10), // Added spacing
+                _buildImageButton('Pick Restaurant Image', false),
+                SizedBox(height: 10), // Added spacing
+                _buildStylishButton('Add Restaurant', _addRestaurant),
+              ],
+            );
+          },
         ),
       ),
     );
