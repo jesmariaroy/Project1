@@ -8,8 +8,12 @@ class HighlyRatedRestaurantsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Highly Rated Restaurants', style: GoogleFonts.pacifico()),
-        backgroundColor: Colors.teal,
+        title: Text(
+          'Highly Rated Restaurants',
+          style: GoogleFonts.pacifico(
+              color: Colors.white), // Set title text color to white
+        ),
+        backgroundColor: Colors.teal, // AppBar color
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
