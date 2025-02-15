@@ -14,7 +14,7 @@ class ImageDisplayPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Restaurant Images',
-          style: GoogleFonts.lato(
+          style: GoogleFonts.pacifico(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
