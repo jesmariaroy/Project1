@@ -11,7 +11,7 @@ class AdminDashboardApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        primaryColor: const Color.fromARGB(255, 51, 148, 137),
         textTheme: TextTheme(
           titleLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           bodyMedium: TextStyle(fontSize: 16),
@@ -41,8 +41,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[800], // Teal gradient color
-        title: Text('Admin Dashboard', style: GoogleFonts.pacifico()),
+        backgroundColor:
+            const Color.fromARGB(255, 51, 148, 137), // Teal gradient color
+        title: Text('Admin Dashboard',
+            style: GoogleFonts.pacifico(color: Colors.white)),
         actions: [
           IconButton(
             icon: Icon(Icons.exit_to_app),
@@ -55,82 +57,89 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.teal[800]!,
-                    Colors.teal[400]!
-                  ], // Teal gradient color
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color.fromARGB(255, 62, 147, 137)!,
+                Colors.teal[400]!
+              ], // Teal gradient color
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Text(
+                      'Restaurant Admin',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color.fromARGB(255, 50, 149, 137)!,
+                      Colors.teal[400]!
+                    ], // Teal gradient color
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 40,
-                    child: Icon(Icons.person,
-                        size: 50,
-                        color: Colors.teal[800]!), // Teal gradient color
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Restaurant Admin',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
+              ListTile(
+                leading: Icon(Icons.dashboard),
+                title: Text('Dashboard', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                  Navigator.pop(context);
+                },
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.dashboard),
-              title: Text('Dashboard'),
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 0;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.table_chart),
-              title: Text('Booking Management'),
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 1;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 2;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Register User'),
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 3;
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ],
+              ListTile(
+                leading: Icon(Icons.table_chart),
+                title: Text('Booking Management',
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = 1;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Settings', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = 2;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.add),
+                title: Text('Register User',
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = 3;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Container(
@@ -164,7 +173,8 @@ class DashboardHome extends StatelessWidget {
             style: GoogleFonts.lato(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[800]!), // Teal gradient color
+                color: const Color.fromARGB(
+                    255, 51, 148, 137)!), // Teal gradient color
           ),
           SizedBox(height: 20),
           Text(
@@ -215,10 +225,19 @@ class BookingManagement extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[800], // Teal gradient color
-        title: Text('Booking Management', style: GoogleFonts.pacifico()),
+        backgroundColor:
+            const Color.fromARGB(255, 51, 148, 137), // Teal gradient color
+        title: Text('Booking Management',
+            style: GoogleFonts.pacifico(color: Colors.white)),
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal[100]!, Colors.white], // Teal gradient color
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,10 +347,19 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[800], // Teal gradient color
-        title: Text('Settings', style: GoogleFonts.pacifico()),
+        backgroundColor:
+            const Color.fromARGB(255, 51, 148, 137), // Teal gradient color
+        title:
+            Text('Settings', style: GoogleFonts.pacifico(color: Colors.white)),
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal[100]!, Colors.white], // Teal gradient color
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,6 +442,7 @@ class SettingsScreen extends StatelessWidget {
 }
 
 // Register User Screen - Form to add a new user
+// Register User Screen - Form to add a new user
 class RegisterUserScreen extends StatefulWidget {
   @override
   _RegisterUserScreenState createState() => _RegisterUserScreenState();
@@ -431,10 +460,19 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[800], // Teal gradient color
-        title: Text('Register User', style: GoogleFonts.pacifico()),
+        backgroundColor:
+            const Color.fromARGB(255, 51, 148, 137), // Teal gradient color
+        title: Text('Register User',
+            style: GoogleFonts.pacifico(color: Colors.white)),
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal[100]!, Colors.white], // Teal gradient color
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,13 +510,15 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
               decoration: InputDecoration(labelText: 'Select Role'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 _registerUser(context);
               },
               child: Text('Register User'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[800], // Teal gradient color
+              style: TextButton.styleFrom(
+                backgroundColor: const Color.fromARGB(
+                    255, 51, 148, 137), // Teal background color
+                foregroundColor: Colors.white, // Text color
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
