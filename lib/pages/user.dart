@@ -5,6 +5,7 @@ import 'user_profile_page.dart';
 import 'restaurant_details_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'HighlyRatedRestaurantsPage.dart';
+import 'login_page.dart';
 
 class UserDashboard extends StatefulWidget {
   @override
@@ -799,7 +800,10 @@ class _UserDashboardState extends State<UserDashboard> {
   void _logout(BuildContext context) async {
     try {
       await _auth.signOut();
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginPage()),
+        (Route<dynamic> route) => false,
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to log out: $e')),
@@ -834,9 +838,8 @@ class _UserDashboardState extends State<UserDashboard> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('User  Dashboard',
-              style: GoogleFonts.pacifico(
-                  color: Colors.white, fontSize: 24)), // Stylish font
-          backgroundColor: Colors.teal, // AppBar color
+              style: GoogleFonts.pacifico(color: Colors.white, fontSize: 24)),
+          backgroundColor: Colors.teal,
           actions: [
             IconButton(
               icon: Icon(Icons.person, color: Colors.white),
@@ -863,7 +866,7 @@ class _UserDashboardState extends State<UserDashboard> {
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.teal[100]!, Colors.white], // Gradient background
+              colors: [Colors.teal[100]!, Colors.white],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -965,6 +968,39 @@ class _UserDashboardState extends State<UserDashboard> {
 
                           return matchesSearchQuery && matchesLocation;
                         }).toList();
+
+                        // Check if the filtered list is empty
+                        if (restaurants.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'No restaurants available',
+                                  style: GoogleFonts.lato(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              UserDashboard()),
+                                      (Route<dynamic> route) => false,
+                                    );
+                                  },
+                                  child: Text('Back to Dashboard'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.teal,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
 
                         return ListView.builder(
                           itemCount: restaurants.length,
@@ -1110,7 +1146,7 @@ class _UserDashboardState extends State<UserDashboard> {
 
               // Button to view highly rated restaurants
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -1121,6 +1157,15 @@ class _UserDashboardState extends State<UserDashboard> {
                     );
                   },
                   child: Text('View Highly Rated Restaurants'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    textStyle: GoogleFonts.lato(fontSize: 16),
+                  ),
                 ),
               ),
             ],
