@@ -98,6 +98,13 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
     }
   }
 
+  // Fetch user name based on userId
+  Future<String> _fetchUserName(String userId) async {
+    final userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    return userDoc.exists ? userDoc['name'] : 'Unknown User';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,18 +252,28 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                           itemCount: reviews.length,
                           itemBuilder: (context, index) {
                             final review = reviews[index];
-                            return Card(
-                              margin: EdgeInsets.symmetric(vertical: 8.0),
-                              elevation: 2,
-                              child: ListTile(
-                                title: Text(review['review'],
-                                    style: GoogleFonts.lato()),
-                                subtitle: Text(
-                                  'By User: ${review['userId']}',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey),
-                                ),
-                              ),
+                            return FutureBuilder<String>(
+                              future: _fetchUserName(review['userId']),
+                              builder: (context, userSnapshot) {
+                                if (!userSnapshot.hasData) {
+                                  return ListTile(
+                                    title: Text('Loading...'),
+                                  );
+                                }
+                                return Card(
+                                  margin: EdgeInsets.symmetric(vertical: 8.0),
+                                  elevation: 2,
+                                  child: ListTile(
+                                    title: Text(review['review'],
+                                        style: GoogleFonts.lato()),
+                                    subtitle: Text(
+                                      'By: ${userSnapshot.data}',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         );
