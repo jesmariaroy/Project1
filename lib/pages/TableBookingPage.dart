@@ -122,7 +122,9 @@ class _TableBookingPageState extends State<TableBookingPage> {
       appBar: AppBar(
         title: Text(
           'Table Booking Management',
-          style: GoogleFonts.pacifico(), // Stylish font
+          style: GoogleFonts.pacifico(
+            color: Colors.white, // Stylish font with white color
+          ),
         ),
         backgroundColor: Colors.teal, // Stylish color
       ),
