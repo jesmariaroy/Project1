@@ -20,6 +20,8 @@ class UserTableBookingPage extends StatefulWidget {
 class _UserTableBookingPageState extends State<UserTableBookingPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   DateTime? _selectedDateTime;
+  final GlobalKey<ScaffoldState> _scaffoldKey =
+      GlobalKey<ScaffoldState>(); // GlobalKey for Scaffold
 
   // Method to check if the reservation has expired (5 hours limit)
   bool _isReservationExpired(DateTime bookedAt) {
@@ -130,6 +132,7 @@ class _UserTableBookingPageState extends State<UserTableBookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // Assign the GlobalKey to the Scaffold
       appBar: AppBar(
         title: Text(
           'User  Table Booking',
@@ -148,6 +151,14 @@ class _UserTableBookingPageState extends State<UserTableBookingPage> {
             icon:
                 Icon(Icons.logout, color: Colors.white), // Logout button color
             onPressed: _logout,
+          ),
+          IconButton(
+            icon: Icon(Icons.menu,
+                color: Colors.white), // Menu button to open drawer
+            onPressed: () {
+              _scaffoldKey.currentState
+                  ?.openDrawer(); // Open the drawer using the GlobalKey
+            },
           ),
         ],
       ),
