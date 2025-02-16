@@ -452,9 +452,9 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  String _selectedRole = 'User '; // Default role
+  String _selectedRole = 'User'; // Default role
 
-  final List<String> roles = ['Hotel Admin', 'User '];
+  final List<String> roles = ['Hotel Admin', 'User'];
 
   @override
   Widget build(BuildContext context) {
