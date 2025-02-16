@@ -12,7 +12,8 @@ class BookingHistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking History', style: GoogleFonts.pacifico()),
+        title: Text('Booking History',
+            style: GoogleFonts.pacifico(color: Colors.white)),
         backgroundColor: Colors.teal, // Stylish color
       ),
       body: Container(
